@@ -23,7 +23,7 @@ class MarkovChain(discord.Client):
         if startingWord in self.wordSet:
             finalString = ""
             p = self.WeightedPick(self.wordSet[startingWord])
-            for i in range(10):
+            for i in range(randint(5,35)):
                 if p not in self.wordSet:
                     break
                 finalString += " " + p
