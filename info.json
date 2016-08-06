@@ -1,0 +1,9 @@
+{
+    "AUTHOR" : "Taylor Petrychyn",
+    "INSTALL_MSG" : "MarkovChain will now keep track of how often you use words and use that to generate sentences.",
+    "NAME" : "MarkovChain",
+    "SHORT" : "Creates sentences based on what you've said in the past",
+    "DESCRIPTION" : "Uses the Markov Chain algorithm to determine your channels sentence patterns.
+    When you send a message it adds each word to a dictionary with what word comes over and it's amount used.
+    It then uses this data to create new sentences based on words and phrases you have used in the past."
+}
