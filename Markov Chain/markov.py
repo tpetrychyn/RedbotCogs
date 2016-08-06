@@ -4,6 +4,7 @@ import discord
 from .utils.dataIO import dataIO
 from discord.ext import commands
 import asyncio
+from random import randint
 import os
 
 class MarkovChain(discord.Client):
