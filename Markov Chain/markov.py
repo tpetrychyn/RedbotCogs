@@ -1,20 +1,43 @@
 import json
 import random
 import discord
+from .utils.dataIO import dataIO
 from discord.ext import commands
+import asyncio
+import os
 
 class MarkovChain(discord.Client):
+    """MarkovChain"""
 
-    theString = ""
-    wordSet = {}
-    lastWord = ""
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+        self.NewMessage(message.content)
 
     def __init__(self, bot):
         self.bot = bot
-        with open('data.json', 'r') as fp:
-            self.wordSet = json.load(fp)
+        self.wordSet = dataIO.load_json('data/markov/data.json')
 
-    def WeightedPick(d):
+    @commands.command()
+    async def memegen(self, startingWord):
+        if startingWord in self.wordSet:
+            finalString = ""
+            p = self.WeightedPick(self.wordSet[startingWord])
+            for i in range(10):
+                if p not in self.wordSet:
+                    break
+                finalString += " " + p
+                p = self.WeightedPick(self.wordSet[p])
+                if p == "":
+                    break
+            if finalString == "":
+                await self.bot.say("You haven't said anything after that word before!")
+            else:
+                await self.bot.say(startingWord + finalString)
+        else:
+            await self.bot.say("That word is not in the wordset")
+
+    def WeightedPick(self, d):
         k = ""
         r = random.uniform(0, sum(d.values()))
         s = 0.0
@@ -23,7 +46,9 @@ class MarkovChain(discord.Client):
             if r < s: return k
         return k
 
-    def NewMessage(message):
+    def NewMessage(self, message):
+        lastWord = ""
+        wordSet = self.wordSet
         for word in message.split():
             if (word not in wordSet):
                 wordSet[word] = {}
@@ -33,23 +58,21 @@ class MarkovChain(discord.Client):
                 else:
                     wordSet[lastWord][word] += 1
             lastWord = word
-        with open('data.json', 'w') as fp:
-            json.dump(wordSet, fp, indent=4)
 
-    def on_message(self, message):
-        self.send_message(message.channel, 'Hello World!')
+        dataIO.save_json('data/markov/data.json', wordSet)
 
-    @commands.command()
-    async def memeGen(self, startingWord):
-        finalString = ""
-        p = WeightedPick(wordSet[startingWord])
-        for i in range(10):
-            finalString += " " + p
-            p = WeightedPick(wordSet[p])
-            if p == "":
-                break
+def check_folders():
+    if not os.path.exists("data/markov"):
+        print("Creating data/markov folder...")
+        os.makedirs("data/markov")
 
-        await self.bot.say(finalString)
+def check_files():
+    f = "data/markov/data.json"
+    data = {}
+    if not dataIO.is_valid_json(f):
+        dataIO.save_json(f, data)
 
 def setup(bot):
+    check_folders()
+    check_files()
     bot.add_cog(MarkovChain(bot))
